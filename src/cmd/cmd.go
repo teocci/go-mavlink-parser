@@ -1,0 +1,114 @@
+// Package cmd
+// Created by RTT.
+// Author: teocci@yandex.com on 2021-Sep-27
+package cmd
+
+import (
+	"fmt"
+	"github.com/teocci/go-mavlink-parser/src/core"
+	"log"
+
+	"github.com/spf13/cobra"
+	"github.com/teocci/go-mavlink-parser/src/cmd/cmdapp"
+	"github.com/teocci/go-mavlink-parser/src/config"
+	"github.com/teocci/go-mavlink-parser/src/logger"
+)
+
+var (
+	app = &cobra.Command{
+		Use:           cmdapp.Name,
+		Short:         cmdapp.Short,
+		Long:          cmdapp.Long,
+		PreRunE:       validate,
+		RunE:          runE,
+		SilenceErrors: false,
+		SilenceUsage:  true,
+	}
+
+	host     string
+	port     int64
+	droneID  int64
+	flightID int64
+)
+
+// Add supported cli commands/flags
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	app.Flags().StringVarP(&host, cmdapp.HName, cmdapp.HShort, host, cmdapp.HDesc)
+
+	app.Flags().Int64VarP(&port, cmdapp.PName, cmdapp.PShort, port, cmdapp.PDesc)
+	app.Flags().Int64VarP(&droneID, cmdapp.DName, cmdapp.DShort, droneID, cmdapp.DDesc)
+	app.Flags().Int64VarP(&flightID, cmdapp.FName, cmdapp.FShort, flightID, cmdapp.FDesc)
+
+	_ = app.MarkFlagRequired(cmdapp.HName)
+
+	config.AddFlags(app)
+}
+
+// Load config
+func initConfig() {
+	if err := config.LoadConfigFile(); err != nil {
+		log.Fatal(err)
+	}
+
+	config.LoadLogConfig()
+}
+
+func validate(ccmd *cobra.Command, args []string) error {
+	if config.Version {
+		fmt.Printf(cmdapp.VersionTemplate, cmdapp.Name, cmdapp.Version, cmdapp.Commit)
+
+		return nil
+	}
+
+	if !config.Verbose {
+		ccmd.HelpFunc()(ccmd, args)
+
+		return fmt.Errorf("")
+	}
+
+	return nil
+}
+
+func runE(ccmd *cobra.Command, args []string) error {
+	var err error
+	config.Log, err = logger.New(config.LogConfig)
+	if err != nil {
+		return ErrCanNotLoadLogger(err)
+	}
+
+	if merge || extract {
+		if !filemngt.FileExists(filename) {
+			return ErrFileDoesNotExist(filename)
+		}
+	}
+
+	// make channel for errors
+	errs := make(chan error)
+
+	go func() {
+		mode := core.EMNormal
+		if extract {
+			mode = core.EMExtract
+		}
+		if merge {
+			mode = core.EMMerge
+		}
+		errs <- core.Start(filename, dest, mode)
+	}()
+
+	// break if any of them return an error (blocks exit)
+	if err := <-errs; err != nil {
+		config.Log.Fatal(err)
+	}
+
+	return err
+}
+
+func Execute() {
+	err := app.Execute()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
