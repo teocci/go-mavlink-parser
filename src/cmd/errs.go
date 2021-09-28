@@ -11,7 +11,12 @@ import (
 const (
 	errFileDoesNotExist = "%s file does not exist"
 	errCanNotLoadLogger = "cannot load logger -> %s"
+	errInitDataIsNil = "initialization data is nil"
 )
+
+func ErrInitDataIsNil()  error {
+	return errors.New(errInitDataIsNil)
+}
 
 func ErrFileDoesNotExist(f string) error {
 	return errors.New(fmt.Sprintf(errFileDoesNotExist, f))

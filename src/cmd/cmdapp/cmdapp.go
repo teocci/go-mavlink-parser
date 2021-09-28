@@ -9,7 +9,7 @@ const (
 	Long  = `This application is an open-source tool that can power UGVs, UAVs, ground stations, monitoring systems or routers, connected to other Mavlink-capable devices through a serial port, UDP, TCP or custom transport.`
 
 	HName  = "hostname"
-	HShort = "h"
+	HShort = "H"
 	HDesc  = "Hostname to connect."
 
 	PName    = "port"

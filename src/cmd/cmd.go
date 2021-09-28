@@ -42,6 +42,9 @@ func init() {
 	app.Flags().Int64VarP(&flightID, cmdapp.FName, cmdapp.FShort, flightID, cmdapp.FDesc)
 
 	_ = app.MarkFlagRequired(cmdapp.HName)
+	_ = app.MarkFlagRequired(cmdapp.PName)
+	_ = app.MarkFlagRequired(cmdapp.DName)
+	_ = app.MarkFlagRequired(cmdapp.FName)
 
 	config.AddFlags(app)
 }
@@ -78,27 +81,19 @@ func runE(ccmd *cobra.Command, args []string) error {
 		return ErrCanNotLoadLogger(err)
 	}
 
-	if merge || extract {
-		if !filemngt.FileExists(filename) {
-			return ErrFileDoesNotExist(filename)
-		}
+	initData := core.InitData{
+		Host: host,
+		Port: port,
+		DroneID: droneID,
+		FlightID: flightID,
 	}
-
-	// make channel for errors
+	// Make channel for errors
 	errs := make(chan error)
-
 	go func() {
-		mode := core.EMNormal
-		if extract {
-			mode = core.EMExtract
-		}
-		if merge {
-			mode = core.EMMerge
-		}
-		errs <- core.Start(filename, dest, mode)
+		errs <- core.Start(initData)
 	}()
 
-	// break if any of them return an error (blocks exit)
+	// Break if any of them return an error (blocks exit)
 	if err := <-errs; err != nil {
 		config.Log.Fatal(err)
 	}
