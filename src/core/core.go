@@ -48,7 +48,7 @@ func Start(initData InitData) error {
 	var trigger = 0
 	for event := range node.Events() {
 		if frm, ok := event.(*gomavlib.EventFrame); ok {
-			fmt.Printf("received: id=%d, %+v\n", frm.Message().GetID(), frm.Message())
+			//fmt.Printf("received: id=%d, %+v\n", frm.Message().GetID(), frm.Message())
 
 			if trigger == 0 {
 				rtt = &data.RTT{
@@ -87,5 +87,5 @@ func Start(initData InitData) error {
 }
 
 func process(rtt *data.RTT) {
-
+	fmt.Printf("Triggered %#v", rtt)
 }
