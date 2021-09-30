@@ -1,10 +1,11 @@
-// Package websocket
+// Package ws_net
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Sep-30
-package websocket
+package ws_net
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net"
 	"net/url"
@@ -16,8 +17,8 @@ import (
 )
 
 const (
-	localAddress  = "localhost:7474"
-	remoteAddress = "192.168.100.92"
+	wsPort   = 7474
+	serverIP = "192.168.100.92"
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
 
@@ -35,12 +36,15 @@ var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
 
-	localIP = net.ParseIP(remoteAddress)
+	localIP = net.ParseIP(serverIP)
+
+	localAddress  = fmt.Sprintf("localhost:%d", wsPort)
+	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 )
 
-// Client is a middleman between the websocket connection and the hub.
+// Client is a middleman between the ws-net connection and the hub.
 type Client struct {
-	// The websocket connection.
+	// The ws-net connection.
 	Conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
@@ -49,7 +53,7 @@ type Client struct {
 	Interrupt chan os.Signal
 }
 
-// onMessage reads messages from the websocket connection
+// onMessage reads messages from the ws-net connection
 //
 // The application runs onMessage in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
@@ -75,7 +79,7 @@ func (c *Client) onMessage() {
 	}
 }
 
-// writePump writes messages from the hub to the websocket connection.
+// writePump writes messages from the hub to the ws-net connection.
 //
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
@@ -103,7 +107,7 @@ func (c *Client) writePump() {
 			}
 			w.Write(message)
 
-			// Add queued chat messages to the current websocket message.
+			// Add queued chat messages to the current ws-net message.
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
@@ -126,7 +130,7 @@ func NewClient() *Client {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	var u = url.URL{Scheme: "wss", Host: remoteAddress, Path: "/jinan-ws"}
+	var u = url.URL{Scheme: "ws", Host: remoteAddress, Path: ""}
 	if GetOutboundIP().Equal(localIP) {
 		u = url.URL{Scheme: "ws", Host: localAddress, Path: ""}
 	}

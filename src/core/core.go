@@ -5,13 +5,13 @@ package core
 
 import (
 	"fmt"
-	"github.com/teocci/go-mavlink-parser/src/model"
-	"github.com/teocci/go-mavlink-parser/src/websocket"
+	ws_net "github.com/teocci/go-mavlink-parser/src/ws-net"
 	"time"
 
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
 	"github.com/teocci/go-mavlink-parser/src/data"
+	"github.com/teocci/go-mavlink-parser/src/model"
 )
 
 type InitData struct {
@@ -46,11 +46,13 @@ func Start(initData InitData) error {
 	db = model.Setup()
 	defer db.Close()
 
+	// init ws
+	ws_net.NewClient()
+
 	var trigger = 0
 	for event := range node.Events() {
 		if frm, ok := event.(*gomavlib.EventFrame); ok {
 			//fmt.Printf("received: id=%d, %+v\n", frm.Message().GetID(), frm.Message())
-
 			if trigger == 0 {
 				rtt = &data.RTT{
 					DroneID:  initData.DroneID,
@@ -88,5 +90,4 @@ func Start(initData InitData) error {
 }
 
 func process(rtt *data.RTT) {
-	websocket.NewClient()
 }
