@@ -6,6 +6,7 @@ package core
 import (
 	"fmt"
 	"github.com/teocci/go-mavlink-parser/src/model"
+	"github.com/teocci/go-mavlink-parser/src/websocket"
 	"time"
 
 	"github.com/aler9/gomavlib"
@@ -59,7 +60,7 @@ func Start(initData InitData) error {
 
 			switch msg := frm.Message().(type) {
 			case *ardupilotmega.MessageHeartbeat:
-				fmt.Printf("received heartbeat (type %d)\n", msg.Type)
+				//fmt.Printf("received heartbeat (type %d)\n", msg.Type)
 			case *ardupilotmega.MessageAttitude:
 				rtt.Roll = msg.Roll
 				rtt.Pitch = msg.Pitch
@@ -87,5 +88,5 @@ func Start(initData InitData) error {
 }
 
 func process(rtt *data.RTT) {
-	fmt.Printf("Triggered %#v", rtt)
+	websocket.NewClient()
 }
