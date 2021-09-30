@@ -160,14 +160,14 @@ func NewClient(interrupt chan os.Signal) *Client {
 	}
 	log.Printf("connecting to %s", u.String())
 
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	wsConn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 		return nil
 	}
 
 	client := &Client{
-		Conn:      c,
+		Conn:      wsConn,
 		Send:      make(chan []byte, 256),
 		Done:      make(chan struct{}),
 		Interrupt: interrupt,
