@@ -8,6 +8,7 @@ type Register struct {
 	ConnID    int64  `json:"connection_id"`
 	ModuleTag string `json:"module_tag"`
 	DroneID   int64  `json:"drone_id"`
+	Role      string `json:"role"`
 }
 
 type UpdateTelemetry struct {

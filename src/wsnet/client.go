@@ -30,6 +30,10 @@ const (
 	CMDConnectServices = "connect-services"
 	CMDUpdateTelemetry = "update-telemetry"
 
+	RoleWebConsumer     = "web-consumer"
+	RoleTelemetryPusher = "telemetry-pusher"
+	RoleStreamingPusher = "streaming-pusher"
+
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
 
@@ -88,19 +92,18 @@ func (c *Client) onMessage() {
 		if err := json.Unmarshal(message, &dat); err != nil {
 			panic(err)
 		}
-		fmt.Printf("%#v\n", dat)
 
 		switch dat["cmd"] {
 		case CMDWSConnected:
 			// {"cmd":"ws-connected","connection_id":xxx}
 			connectionID := int64(dat["connection_id"].(float64))
-			fmt.Printf("%T->%#v\n", connectionID, connectionID)
 
 			req := &data.Register{
 				CMD:       CMDRegister,
 				ConnID:    connectionID,
 				ModuleTag: conf.ModuleTag,
 				DroneID:   conf.DroneID,
+				Role:      RoleTelemetryPusher,
 			}
 
 			jsonData, err := json.Marshal(req)
@@ -111,7 +114,6 @@ func (c *Client) onMessage() {
 		default:
 			log.Printf("recv: %s", message)
 		}
-
 	}
 }
 
