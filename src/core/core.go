@@ -20,11 +20,12 @@ import (
 )
 
 type InitConf struct {
-	Host     string
-	Port     int64
-	ClientID int64
-	DroneID  int64
-	FlightID int64
+	Host      string
+	Port      int64
+	ConnID    int64
+	ModuleTag string
+	DroneID   int64
+	FlightID  int64
 }
 
 var (
@@ -105,10 +106,11 @@ func Start(c InitConf) error {
 
 func process(rtt *data.RTT) {
 	req := &data.ReqUpdate{
-		CMD:     wsnet.CMDUpdateTelemetry,
-		ToID:    initConf.ClientID,
-		DroneID: initConf.DroneID,
-		Record:  *rtt,
+		CMD:      wsnet.CMDUpdateTelemetry,
+		ToConnID: initConf.ConnID,
+		ModuleTag: initConf.ModuleTag,
+		DroneID:  initConf.DroneID,
+		Record:   *rtt,
 	}
 
 	jsonData, err := json.Marshal(req)

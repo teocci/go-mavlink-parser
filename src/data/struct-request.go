@@ -4,8 +4,9 @@
 package data
 
 type ReqUpdate struct {
-	CMD     string `json:"cmd"`
-	ToID    int64  `json:"to_id"`
-	DroneID int64  `json:"drone_id"`
-	Record  RTT    `json:"record"`
+	CMD       string `json:"cmd"`
+	ToConnID  int64  `json:"to_connection_id"`
+	ModuleTag string `json:"module_tag"`
+	DroneID   int64  `json:"drone_id"`
+	Record    RTT    `json:"record"`
 }

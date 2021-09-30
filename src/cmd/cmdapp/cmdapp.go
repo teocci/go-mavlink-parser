@@ -21,6 +21,10 @@ const (
 	CShort   = "c"
 	CDesc    = "Connection id"
 
+	MName    = "module-tag"
+	MShort   = "m"
+	MDesc    = "Module tag"
+
 	DName    = "drone-id"
 	DShort   = "d"
 	DDesc    = "Drone id"

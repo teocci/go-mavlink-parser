@@ -25,11 +25,12 @@ var (
 		SilenceUsage:  true,
 	}
 
-	host     string
-	port     int64
-	clientID int64
-	droneID  int64
-	flightID int64
+	host      string
+	port      int64
+	connID    int64
+	moduleTag string
+	droneID   int64
+	flightID  int64
 )
 
 // Add supported cli commands/flags
@@ -37,13 +38,16 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	app.Flags().StringVarP(&host, cmdapp.HName, cmdapp.HShort, host, cmdapp.HDesc)
+	app.Flags().StringVarP(&moduleTag, cmdapp.MName, cmdapp.MShort, moduleTag, cmdapp.MDesc)
 
 	app.Flags().Int64VarP(&port, cmdapp.PName, cmdapp.PShort, port, cmdapp.PDesc)
-	app.Flags().Int64VarP(&clientID, cmdapp.CName, cmdapp.CShort, clientID, cmdapp.CDesc)
+	app.Flags().Int64VarP(&connID, cmdapp.CName, cmdapp.CShort, connID, cmdapp.CDesc)
 	app.Flags().Int64VarP(&droneID, cmdapp.DName, cmdapp.DShort, droneID, cmdapp.DDesc)
 	app.Flags().Int64VarP(&flightID, cmdapp.FName, cmdapp.FShort, flightID, cmdapp.FDesc)
 
 	_ = app.MarkFlagRequired(cmdapp.HName)
+	_ = app.MarkFlagRequired(cmdapp.MName)
+
 	_ = app.MarkFlagRequired(cmdapp.PName)
 	_ = app.MarkFlagRequired(cmdapp.CName)
 	_ = app.MarkFlagRequired(cmdapp.DName)
@@ -85,11 +89,12 @@ func runE(ccmd *cobra.Command, args []string) error {
 	}
 
 	initData := core.InitConf{
-		Host:     host,
-		Port:     port,
-		ClientID: clientID,
-		DroneID:  droneID,
-		FlightID: flightID,
+		Host:      host,
+		Port:      port,
+		ConnID:    connID,
+		ModuleTag: moduleTag,
+		DroneID:   droneID,
+		FlightID:  flightID,
 	}
 	// Make channel for errors
 	errs := make(chan error)
