@@ -74,6 +74,7 @@ func (c *Client) onMessage() {
 			}
 			break
 		}
+		log.Printf("recv: %s", message)
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
 		//c.hub.broadcast <- message
 	}
