@@ -91,11 +91,11 @@ func Start(c data.InitConf) error {
 
 func process(rtt *data.RTT) {
 	req := &data.UpdateTelemetry{
-		CMD:      wsnet.CMDUpdateTelemetry,
-		ToConnID: initConf.ConnID,
+		CMD:       wsnet.CMDUpdateTelemetry,
+		ToConnID:  initConf.ConnID,
 		ModuleTag: initConf.ModuleTag,
-		DroneID:  initConf.DroneID,
-		Record:   *rtt,
+		DroneID:   initConf.DroneID,
+		Record:    *rtt,
 	}
 
 	jsonData, err := json.Marshal(req)
