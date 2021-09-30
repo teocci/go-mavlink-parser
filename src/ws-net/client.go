@@ -4,13 +4,11 @@
 package ws_net
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"net"
 	"net/url"
 	"os"
-	"os/signal"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -63,43 +61,43 @@ func (c *Client) onMessage() {
 		_ = c.Conn.Close()
 	}()
 
-	c.Conn.SetReadLimit(maxMessageSize)
-	_ = c.Conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.Conn.SetPongHandler(func(string) error { _ = c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	fmt.Println("onMessage listening")
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
-			}
-			break
+			log.Fatalf("error: %v", err)
+			return
 		}
 		log.Printf("recv: %s", message)
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		//c.hub.broadcast <- message
 	}
 }
 
-// writePump writes messages from the hub to the ws-net connection.
+// onEvent writes messages from the hub to the ws-net connection.
 //
-// A goroutine running writePump is started for each connection. The
+// A goroutine running onEvent is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *Client) writePump() {
+func (c *Client) onEvent() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
 		_ = c.Conn.Close()
 	}()
 
+	fmt.Println("onEvent listening")
 	for {
 		select {
 		case <-c.Done:
 			return
 		case message, ok := <-c.Send:
+			data := string(message[:])
+			log.Println("onEvent-> message")
+			log.Printf("%#v", message)
+			log.Printf("%#v", data)
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
+				log.Println("onEvent-> !ok")
 				_ = c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -121,12 +119,13 @@ func (c *Client) writePump() {
 				return
 			}
 		case <-ticker.C:
+			log.Println("onEvent-> ticker.C")
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
 		case <-c.Interrupt:
-			log.Println("interrupt")
+			log.Println("onEvent-> interrupt")
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
@@ -141,14 +140,14 @@ func (c *Client) writePump() {
 			}
 			return
 		}
-
 	}
 }
 
-func NewClient() *Client {
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
+func (c *Client) Close() {
+	c.Close()
+}
 
+func NewClient(interrupt chan os.Signal) *Client {
 	var u = url.URL{Scheme: "ws", Host: remoteAddress, Path: ""}
 	if GetOutboundIP().Equal(localIP) {
 		u = url.URL{Scheme: "ws", Host: localAddress, Path: ""}
@@ -160,13 +159,17 @@ func NewClient() *Client {
 		log.Fatal("dial:", err)
 		return nil
 	}
-	defer c.Close()
 
-	client := &Client{Conn: c, Send: make(chan []byte, 256), Done: make(chan struct{}), Interrupt: interrupt}
+	client := &Client{
+		Conn:      c,
+		Send:      make(chan []byte, 256),
+		Done:      make(chan struct{}),
+		Interrupt: interrupt,
+	}
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
-	go client.writePump()
+	go client.onEvent()
 	go client.onMessage()
 
 	return client

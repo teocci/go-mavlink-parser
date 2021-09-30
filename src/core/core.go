@@ -4,14 +4,19 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
-	ws_net "github.com/teocci/go-mavlink-parser/src/ws-net"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
 	"github.com/teocci/go-mavlink-parser/src/data"
 	"github.com/teocci/go-mavlink-parser/src/model"
+	ws_net "github.com/teocci/go-mavlink-parser/src/ws-net"
 )
 
 type InitData struct {
@@ -21,7 +26,10 @@ type InitData struct {
 	FlightID int64
 }
 
-var rtt *data.RTT
+var (
+	rtt *data.RTT
+	ws  *ws_net.Client
+)
 
 func Start(initData InitData) error {
 	address := fmt.Sprintf("%s:%d", initData.Host, initData.Port)
@@ -46,8 +54,12 @@ func Start(initData InitData) error {
 	db = model.Setup()
 	defer db.Close()
 
+
+	interrupt := make(chan os.Signal)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+
 	// init ws
-	ws_net.NewClient()
+	ws = ws_net.NewClient(interrupt)
 
 	var trigger = 0
 	for event := range node.Events() {
@@ -90,4 +102,15 @@ func Start(initData InitData) error {
 }
 
 func process(rtt *data.RTT) {
+	req := &data.ReqUpdate{
+		CMD:    "req-update",
+		Record: *rtt,
+	}
+
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		log.Fatalf("process(): %v", err)
+	}
+
+	ws.Send <- jsonData
 }
