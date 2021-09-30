@@ -29,7 +29,7 @@ const (
 	vDesc  = "Run in verbose mode"
 
 	cfName  = "config-file"
-	cfShort = "c"
+	cfShort = "C"
 	cfDesc  = "Configuration file to load"
 
 	tdName  = "temp-dir"

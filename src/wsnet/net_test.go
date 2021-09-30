@@ -1,7 +1,7 @@
-// Package ws_net
+// Package wsnet
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Sep-30
-package ws_net
+package wsnet
 
 import (
 	"fmt"

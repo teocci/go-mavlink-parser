@@ -16,23 +16,26 @@ import (
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
 	"github.com/teocci/go-mavlink-parser/src/data"
 	"github.com/teocci/go-mavlink-parser/src/model"
-	ws_net "github.com/teocci/go-mavlink-parser/src/ws-net"
+	"github.com/teocci/go-mavlink-parser/src/wsnet"
 )
 
-type InitData struct {
+type InitConf struct {
 	Host     string
 	Port     int64
+	ClientID int64
 	DroneID  int64
 	FlightID int64
 }
 
 var (
-	rtt *data.RTT
-	ws  *ws_net.Client
+	initConf InitConf
+	rtt      *data.RTT
+	ws       *wsnet.Client
 )
 
-func Start(initData InitData) error {
-	address := fmt.Sprintf("%s:%d", initData.Host, initData.Port)
+func Start(c InitConf) error {
+	initConf = c
+	address := fmt.Sprintf("%s:%d", initConf.Host, initConf.Port)
 	// create a node which
 	// - communicates with a TCP endpoint in client mode
 	// - understands ardupilotmega dialect
@@ -54,12 +57,11 @@ func Start(initData InitData) error {
 	db = model.Setup()
 	defer db.Close()
 
-
 	interrupt := make(chan os.Signal)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	// init ws
-	ws = ws_net.NewClient(interrupt)
+	ws = wsnet.NewClient(interrupt)
 
 	var trigger = 0
 	for event := range node.Events() {
@@ -67,8 +69,8 @@ func Start(initData InitData) error {
 			//fmt.Printf("received: id=%d, %+v\n", frm.Message().GetID(), frm.Message())
 			if trigger == 0 {
 				rtt = &data.RTT{
-					DroneID:  initData.DroneID,
-					FlightID: initData.FlightID,
+					DroneID:  initConf.DroneID,
+					FlightID: initConf.FlightID,
 				}
 			}
 
@@ -103,8 +105,10 @@ func Start(initData InitData) error {
 
 func process(rtt *data.RTT) {
 	req := &data.ReqUpdate{
-		CMD:    "req-update",
-		Record: *rtt,
+		CMD:     wsnet.CMDUpdateTelemetry,
+		ToID:    initConf.ClientID,
+		DroneID: initConf.DroneID,
+		Record:  *rtt,
 	}
 
 	jsonData, err := json.Marshal(req)

@@ -17,6 +17,10 @@ const (
 	PDesc    = "Port to connect"
 	PDefault = 20102
 
+	CName    = "connection-id"
+	CShort   = "c"
+	CDesc    = "Connection id"
+
 	DName    = "drone-id"
 	DShort   = "d"
 	DDesc    = "Drone id"

@@ -27,6 +27,7 @@ var (
 
 	host     string
 	port     int64
+	clientID int64
 	droneID  int64
 	flightID int64
 )
@@ -38,11 +39,13 @@ func init() {
 	app.Flags().StringVarP(&host, cmdapp.HName, cmdapp.HShort, host, cmdapp.HDesc)
 
 	app.Flags().Int64VarP(&port, cmdapp.PName, cmdapp.PShort, port, cmdapp.PDesc)
+	app.Flags().Int64VarP(&clientID, cmdapp.CName, cmdapp.CShort, clientID, cmdapp.CDesc)
 	app.Flags().Int64VarP(&droneID, cmdapp.DName, cmdapp.DShort, droneID, cmdapp.DDesc)
 	app.Flags().Int64VarP(&flightID, cmdapp.FName, cmdapp.FShort, flightID, cmdapp.FDesc)
 
 	_ = app.MarkFlagRequired(cmdapp.HName)
 	_ = app.MarkFlagRequired(cmdapp.PName)
+	_ = app.MarkFlagRequired(cmdapp.CName)
 	_ = app.MarkFlagRequired(cmdapp.DName)
 	_ = app.MarkFlagRequired(cmdapp.FName)
 
@@ -81,10 +84,11 @@ func runE(ccmd *cobra.Command, args []string) error {
 		return ErrCanNotLoadLogger(err)
 	}
 
-	initData := core.InitData{
-		Host: host,
-		Port: port,
-		DroneID: droneID,
+	initData := core.InitConf{
+		Host:     host,
+		Port:     port,
+		ClientID: clientID,
+		DroneID:  droneID,
 		FlightID: flightID,
 	}
 	// Make channel for errors

@@ -1,7 +1,7 @@
-// Package ws_net
+// Package wsnet
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Sep-30
-package ws_net
+package wsnet
 
 import (
 	"fmt"
@@ -17,6 +17,14 @@ import (
 const (
 	wsPort   = 7474
 	serverIP = "192.168.100.92"
+
+	CMDPing            = "ping"
+	CMDPong            = "pong"
+	CMDRegister        = "register"
+
+	CMDConnectServices = "connect-services"
+	CMDUpdateTelemetry = "update-telemetry"
+
 	// Time allowed to write a message to the peer.
 	writeWait = 10 * time.Second
 
@@ -40,9 +48,9 @@ var (
 	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 )
 
-// Client is a middleman between the ws-net connection and the hub.
+// Client is a middleman between the websocket server and this application
 type Client struct {
-	// The ws-net connection.
+	// The wsnet connection.
 	Conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
@@ -51,10 +59,10 @@ type Client struct {
 	Interrupt chan os.Signal
 }
 
-// onMessage reads messages from the ws-net connection
+// onMessage reads messages from the websocket connection
 //
-// The application runs onMessage in a per-connection goroutine. The application
-// ensures that there is at most one reader on a connection by executing all
+// Runs onMessage in a per-connection goroutine. The application ensures
+// that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 func (c *Client) onMessage() {
 	defer func() {
@@ -72,7 +80,7 @@ func (c *Client) onMessage() {
 	}
 }
 
-// onEvent writes messages from the hub to the ws-net connection.
+// onEvent writes messages from the hub to the websocket connection.
 //
 // A goroutine running onEvent is started for each connection. The
 // application ensures that there is at most one writer to a connection by
@@ -96,8 +104,6 @@ func (c *Client) onEvent() {
 			log.Printf("%#v", data)
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
-				// The hub closed the channel.
-				log.Println("onEvent-> !ok")
 				_ = c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -106,13 +112,13 @@ func (c *Client) onEvent() {
 			if err != nil {
 				return
 			}
-			w.Write(message)
+			_, _ = w.Write(message)
 
-			// Add queued chat messages to the current ws-net message.
+			// Add queued chat messages to the current websocket message.
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
-				w.Write(newline)
-				w.Write(<-c.Send)
+				_, _ = w.Write(newline)
+				_, _ = w.Write(<-c.Send)
 			}
 
 			if err := w.Close(); err != nil {
