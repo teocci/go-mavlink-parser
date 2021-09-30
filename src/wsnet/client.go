@@ -4,11 +4,15 @@
 package wsnet
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/teocci/go-mavlink-parser/src/data"
 	"log"
 	"net"
 	"net/url"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -18,10 +22,11 @@ const (
 	wsPort   = 7474
 	serverIP = "192.168.100.92"
 
-	CMDPing            = "ping"
-	CMDPong            = "pong"
-	CMDRegister        = "register"
+	CMDPing     = "ping"
+	CMDPong     = "pong"
+	CMDRegister = "register"
 
+	CMDWSConnected     = "ws-connected"
 	CMDConnectServices = "connect-services"
 	CMDUpdateTelemetry = "update-telemetry"
 
@@ -46,6 +51,8 @@ var (
 
 	localAddress  = fmt.Sprintf("localhost:%d", wsPort)
 	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
+
+	conf data.InitConf
 )
 
 // Client is a middleman between the websocket server and this application
@@ -76,7 +83,35 @@ func (c *Client) onMessage() {
 			log.Fatalf("error: %v", err)
 			return
 		}
-		log.Printf("recv: %s", message)
+
+		var dat map[string]interface{}
+		if err := json.Unmarshal(message, &dat); err != nil {
+			panic(err)
+		}
+		fmt.Printf("%#v\n", dat)
+
+		switch dat["cmd"] {
+		case CMDWSConnected:
+			// {"cmd":"ws-connected","connection_id":xxx}
+			connectionID := int64(dat["connection_id"].(float64))
+			fmt.Printf("%T->%#v\n", connectionID, connectionID)
+
+			req := &data.Register{
+				CMD:       CMDRegister,
+				ConnID:    connectionID,
+				ModuleTag: conf.ModuleTag,
+				DroneID:   conf.DroneID,
+			}
+
+			jsonData, err := json.Marshal(req)
+			if err != nil {
+				log.Fatalf("onMessage(): %v", err)
+			}
+			c.Send <- jsonData
+		default:
+			log.Printf("recv: %s", message)
+		}
+
 	}
 }
 
@@ -153,7 +188,8 @@ func (c *Client) Close() {
 	c.Close()
 }
 
-func NewClient(interrupt chan os.Signal) *Client {
+func NewClient(c data.InitConf) *Client {
+	conf = c
 	var u = url.URL{Scheme: "ws", Host: remoteAddress, Path: ""}
 	if GetOutboundIP().Equal(localIP) {
 		u = url.URL{Scheme: "ws", Host: localAddress, Path: ""}
@@ -165,6 +201,9 @@ func NewClient(interrupt chan os.Signal) *Client {
 		log.Fatal("dial:", err)
 		return nil
 	}
+
+	interrupt := make(chan os.Signal)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
 	client := &Client{
 		Conn:      wsConn,

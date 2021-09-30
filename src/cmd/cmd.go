@@ -5,12 +5,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/teocci/go-mavlink-parser/src/core"
 	"log"
 
 	"github.com/spf13/cobra"
 	"github.com/teocci/go-mavlink-parser/src/cmd/cmdapp"
 	"github.com/teocci/go-mavlink-parser/src/config"
+	"github.com/teocci/go-mavlink-parser/src/core"
+	"github.com/teocci/go-mavlink-parser/src/data"
 	"github.com/teocci/go-mavlink-parser/src/logger"
 )
 
@@ -88,7 +89,7 @@ func runE(ccmd *cobra.Command, args []string) error {
 		return ErrCanNotLoadLogger(err)
 	}
 
-	initData := core.InitConf{
+	initData := data.InitConf{
 		Host:      host,
 		Port:      port,
 		ConnID:    connID,

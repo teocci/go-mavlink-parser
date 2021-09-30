@@ -7,9 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/aler9/gomavlib"
@@ -19,22 +16,13 @@ import (
 	"github.com/teocci/go-mavlink-parser/src/wsnet"
 )
 
-type InitConf struct {
-	Host      string
-	Port      int64
-	ConnID    int64
-	ModuleTag string
-	DroneID   int64
-	FlightID  int64
-}
-
 var (
-	initConf InitConf
+	initConf data.InitConf
 	rtt      *data.RTT
 	ws       *wsnet.Client
 )
 
-func Start(c InitConf) error {
+func Start(c data.InitConf) error {
 	initConf = c
 	address := fmt.Sprintf("%s:%d", initConf.Host, initConf.Port)
 	// create a node which
@@ -58,11 +46,8 @@ func Start(c InitConf) error {
 	db = model.Setup()
 	defer db.Close()
 
-	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
-
 	// init ws
-	ws = wsnet.NewClient(interrupt)
+	ws = wsnet.NewClient(initConf)
 
 	var trigger = 0
 	for event := range node.Events() {
@@ -105,7 +90,7 @@ func Start(c InitConf) error {
 }
 
 func process(rtt *data.RTT) {
-	req := &data.ReqUpdate{
+	req := &data.UpdateTelemetry{
 		CMD:      wsnet.CMDUpdateTelemetry,
 		ToConnID: initConf.ConnID,
 		ModuleTag: initConf.ModuleTag,
