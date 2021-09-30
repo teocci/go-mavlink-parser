@@ -48,8 +48,8 @@ type Client struct {
 	Conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	Send chan []byte
-
+	Send      chan []byte
+	Done      chan struct{}
 	Interrupt chan os.Signal
 }
 
@@ -93,6 +93,8 @@ func (c *Client) writePump() {
 
 	for {
 		select {
+		case <-c.Done:
+			return
 		case message, ok := <-c.Send:
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
@@ -122,7 +124,23 @@ func (c *Client) writePump() {
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
+		case <-c.Interrupt:
+			log.Println("interrupt")
+
+			// Cleanly close the connection by sending a close message and then
+			// waiting (with timeout) for the server to close the connection.
+			err := c.Conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Println("write close:", err)
+				return
+			}
+			select {
+			case <-c.Done:
+			case <-time.After(time.Second):
+			}
+			return
 		}
+
 	}
 }
 
@@ -143,7 +161,7 @@ func NewClient() *Client {
 	}
 	defer c.Close()
 
-	client := &Client{Conn: c, Send: make(chan []byte, 256), Interrupt: interrupt}
+	client := &Client{Conn: c, Send: make(chan []byte, 256), Done: make(chan struct{}), Interrupt: interrupt}
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
