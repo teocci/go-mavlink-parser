@@ -6,6 +6,7 @@ package data
 type Register struct {
 	CMD       string `json:"cmd"`
 	ConnID    int64  `json:"connection_id"`
+	WorkerID  int64  `json:"worker_id"`
 	ModuleTag string `json:"module_tag"`
 	DroneID   int64  `json:"drone_id"`
 	Role      string `json:"role"`

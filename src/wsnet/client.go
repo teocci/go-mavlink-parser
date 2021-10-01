@@ -61,8 +61,11 @@ var (
 
 // Client is a middleman between the websocket server and this application
 type Client struct {
-	// The wsnet connection.
+	// The websocket connection.
 	Conn *websocket.Conn
+
+	ConnectionID int64
+	WorkerID int64
 
 	// Buffered channel of outbound messages.
 	Send      chan []byte
@@ -96,11 +99,13 @@ func (c *Client) onMessage() {
 		switch dat["cmd"] {
 		case CMDWSConnected:
 			// {"cmd":"ws-connected","connection_id":xxx}
-			connectionID := int64(dat["connection_id"].(float64))
+			c.ConnectionID = int64(dat["connection_id"].(float64))
+			c.WorkerID = int64(dat["worker_id"].(float64))
 
 			req := &data.Register{
 				CMD:       CMDRegister,
-				ConnID:    connectionID,
+				ConnID:    c.ConnectionID,
+				WorkerID:    c.WorkerID,
 				ModuleTag: conf.ModuleTag,
 				DroneID:   conf.DroneID,
 				Role:      RoleTelemetryPusher,

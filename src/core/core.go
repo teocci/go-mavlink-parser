@@ -100,7 +100,7 @@ func process(rtt *data.RTT) {
 
 	jsonData, err := json.Marshal(req)
 	if err != nil {
-		log.Fatalf("process(): %v", err)
+		log.Printf("process(): %v", err)
 	}
 
 	ws.Send <- jsonData
