@@ -26,8 +26,8 @@ const (
 	CMDPong     = "pong"
 	CMDRegister = "register"
 
-	CMDWSConnected     = "ws-connected"
-	CMDConnectServices = "connect-services"
+	CMDWebsocketConnected = "websocket-connected"
+	CMDConnectServices    = "connect-services"
 	CMDUpdateTelemetry = "update-telemetry"
 
 	RoleWebConsumer     = "web-consumer"
@@ -97,7 +97,7 @@ func (c *Client) onMessage() {
 		}
 
 		switch dat["cmd"] {
-		case CMDWSConnected:
+		case CMDWebsocketConnected:
 			// {"cmd":"ws-connected","connection_id":xxx}
 			c.ConnectionID = int64(dat["connection_id"].(float64))
 			c.WorkerID = int64(dat["worker_id"].(float64))
