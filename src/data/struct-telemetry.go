@@ -10,6 +10,7 @@ import (
 )
 
 type RTT struct {
+	Seq            int64     `json:"seq" csv:"seq"`
 	DroneID        int64     `json:"drone_id" csv:"drone_id"`
 	FlightID       int64     `json:"flight_id" csv:"flight_id"`
 	TimeBootMs     uint32    `json:"time_boot_ms" csv:"time_boot_ms"`

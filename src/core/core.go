@@ -49,6 +49,7 @@ func Start(c data.InitConf) error {
 	// init ws
 	ws = wsnet.NewClient(initConf)
 
+	var seq int64 = 0
 	var trigger = 0
 	for event := range node.Events() {
 		if frm, ok := event.(*gomavlib.EventFrame); ok {
@@ -71,17 +72,19 @@ func Start(c data.InitConf) error {
 				trigger |= 1
 			case *ardupilotmega.MessageGlobalPositionInt:
 				rtt.TimeBootMs = msg.TimeBootMs
-				rtt.Lat = msg.Lat
-				rtt.Lon = msg.Lon
-				rtt.Alt = msg.Alt
+				rtt.Lat = msg.Lat / 1e7
+				rtt.Lon = msg.Lon / 1e7
+				rtt.Alt = msg.Alt / 1e3 // convert to meters
 				rtt.LastUpdate = time.Now()
 
 				trigger |= 2
 			}
 
 			if trigger&2 == 2 {
+				rtt.Seq = seq
 				process(rtt)
 				trigger = 0
+				seq++
 			}
 		}
 	}
