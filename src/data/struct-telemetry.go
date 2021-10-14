@@ -14,9 +14,9 @@ type RTT struct {
 	DroneID        int64     `json:"drone_id" csv:"drone_id"`
 	FlightID       int64     `json:"flight_id" csv:"flight_id"`
 	TimeBootMs     uint32    `json:"time_boot_ms" csv:"time_boot_ms"`
-	Lat            int32     `json:"lat" csv:"lat"`
-	Lon            int32     `json:"lon" csv:"lon"`
-	Alt            int32     `json:"alt" csv:"lat"`
+	Lat            float32   `json:"lat" csv:"lat"`
+	Lon            float32   `json:"lon" csv:"lon"`
+	Alt            float32   `json:"alt" csv:"lat"`
 	Roll           float32   `json:"roll" csv:"lat"`
 	Pitch          float32   `json:"pitch" csv:"lat"`
 	Yaw            float32   `json:"yaw" csv:"lat"`
@@ -49,9 +49,9 @@ func ParseRTT(data []string) *RTT {
 		DroneID:        int64(droneID),
 		FlightID:       int64(sessionID),
 		TimeBootMs:     uint32(timeBootMs),
-		Lat:            int32(lat),
-		Lon:            int32(long),
-		Alt:            int32(alt),
+		Lat:            float32(lat),
+		Lon:            float32(long),
+		Alt:            float32(alt),
 		Roll:           float32(roll),
 		Pitch:          float32(pitch),
 		Yaw:            float32(yaw),
