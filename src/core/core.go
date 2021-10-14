@@ -72,9 +72,9 @@ func Start(c data.InitConf) error {
 				trigger |= 1
 			case *ardupilotmega.MessageGlobalPositionInt:
 				rtt.TimeBootMs = msg.TimeBootMs
-				rtt.Lat = float32(msg.Lat / 1e7)
-				rtt.Lon = float32(msg.Lon / 1e7)
-				rtt.Alt = float32(msg.Alt / 1e3) // convert to meters
+				rtt.Lat = msg.Lat
+				rtt.Lon = msg.Lon
+				rtt.Alt = msg.Alt // convert to meters
 				rtt.LastUpdate = time.Now()
 
 				trigger |= 2
