@@ -7,4 +7,6 @@ go build main.go
 
 # Rename main as a proctel
 mv -v main proctel
-cp -v proctel /home/rtt/apps/proctel
+
+# Install the app in the rtt app directory
+sudo cp -vf proctel /usr/local/rtt/bin/proctel
