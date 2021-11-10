@@ -31,8 +31,11 @@ pkg_path="${module_path}/${PKG_NAME}"
 go build main.go
 
 # Rename main as a PKG_NAME
-mv -v main "${PKG_NAME}" "${pkg_path}"
-cp -v "${PKG_NAME}" "${pkg_path}"
+mv -v main "${PKG_NAME}"
+
+# Install
+sudo mkdir -p "${module_path}"
+sudo cp -v "${PKG_NAME}" "${pkg_path}"
 
 if [ ! -L "${pkg_path}" ] || [ ! -e "${pkg_path}" ]; then
   sudo ln -sv "${module_path}" "${module_lib_path}"
