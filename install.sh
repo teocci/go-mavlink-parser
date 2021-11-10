@@ -35,13 +35,13 @@ mv -v main "${PKG_NAME}"
 
 # Install
 sudo mkdir -p "${module_path}/bin"
-sudo mkdir -p "${module_lib_path}"
-sudo mkdir -p "${module_bin_path}"
+#sudo mkdir -p "${module_lib_path}"
+#sudo mkdir -p "${module_bin_path}"
 
 sudo cp -v "${PKG_NAME}" "${pkg_path}"
 
 if [ ! -L "${module_lib_path}" ] || [ ! -e "${module_lib_path}" ]; then
-  sudo ln -sv "${module_path}" "${module_lib_path}"
+  sudo ln -sv "${module_path}" "${LIB_PATH}"
 fi
 
 if [ ! -L "${module_bin_path}/${PKG_NAME}" ] || [ ! -e "${module_bin_path}/${PKG_NAME}" ]; then
