@@ -16,16 +16,16 @@ PKG_NAME='proctel'
 MODULE_NAME='rtt'
 
 ## Define installation path
-module_path="${LOCAL_PATH}/${MODULE_NAME}/bin"
+module_path="${LOCAL_PATH}/${MODULE_NAME}"
 
 ## Define module lib path
-module_lib_path="${LIB_PATH}/${MODULE_NAME}/bin"
+module_lib_path="${LIB_PATH}/${MODULE_NAME}"
 
 ## Define module bin path
 module_bin_path="${BIN_PATH}/${MODULE_NAME}"
 
 ## Define package path
-pkg_path="${module_path}/${PKG_NAME}"
+pkg_path="${module_path}/bin/${PKG_NAME}"
 
 # Build the main
 go build main.go
@@ -34,12 +34,16 @@ go build main.go
 mv -v main "${PKG_NAME}"
 
 # Install
-sudo mkdir -p "${module_path}"
+sudo mkdir -p "${module_path}/bin"
 sudo mkdir -p "${module_lib_path}"
 sudo mkdir -p "${module_bin_path}"
+
 sudo cp -v "${PKG_NAME}" "${pkg_path}"
 
-if [ ! -L "${pkg_path}" ] || [ ! -e "${pkg_path}" ]; then
+if [ ! -L "${module_lib_path}" ] || [ ! -e "${module_lib_path}" ]; then
   sudo ln -sv "${module_path}" "${module_lib_path}"
-  sudo ln -sv "${module_lib_path}/${PKG_NAME}" "${module_bin_path}/${PKG_NAME}"
+fi
+
+if [ ! -L "${module_bin_path}/${PKG_NAME}" ] || [ ! -e "${module_bin_path}/${PKG_NAME}" ]; then
+  sudo ln -sv "${module_lib_path}/bin/${PKG_NAME}" "${module_bin_path}/${PKG_NAME}"
 fi
