@@ -35,6 +35,8 @@ mv -v main "${PKG_NAME}"
 
 # Install
 sudo mkdir -p "${module_path}"
+sudo mkdir -p "${module_lib_path}"
+sudo mkdir -p "${module_bin_path}"
 sudo cp -v "${PKG_NAME}" "${pkg_path}"
 
 if [ ! -L "${pkg_path}" ] || [ ! -e "${pkg_path}" ]; then
