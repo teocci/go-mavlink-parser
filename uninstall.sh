@@ -1,5 +1,11 @@
 #!/bin/bash
 
+## Define package name
+PKG_NAME='proctel'
+
+## Define module
+MODULE_NAME='rtt'
+
 ## Define local path
 LOCAL_PATH='/usr/local'
 
@@ -8,12 +14,6 @@ LIB_PATH='/usr/lib'
 
 ## Define system binary path
 BIN_PATH='/usr/bin'
-
-## Define package name
-PKG_NAME='proctel'
-
-## Define module
-MODULE_NAME='rtt'
 
 ## Define installation path
 module_path="${LOCAL_PATH}/${MODULE_NAME}"
