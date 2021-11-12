@@ -1,7 +1,7 @@
-// Package data
+// Package datamgr
 // Created by RTT.
 // Author: teocci@yandex.com on 2021-Sep-30
-package data
+package datamgr
 
 type Register struct {
 	CMD       string `json:"cmd"`

@@ -4,25 +4,32 @@
 package core
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"time"
 
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
-	"github.com/teocci/go-mavlink-parser/src/data"
+	"github.com/jszwec/csvutil"
+	"github.com/teocci/go-mavlink-parser/src/csvmgr"
+	"github.com/teocci/go-mavlink-parser/src/datamgr"
 	"github.com/teocci/go-mavlink-parser/src/model"
 	"github.com/teocci/go-mavlink-parser/src/wsnet"
 )
 
 var (
-	initConf data.InitConf
-	rtt      *data.RTT
+	initConf datamgr.InitConf
+	rtt      *datamgr.RTT
 	ws       *wsnet.Client
+	csvl     *csvmgr.CSVLogger
+
+	headerSent = false
 )
 
-func Start(c data.InitConf) error {
+func Start(c datamgr.InitConf) error {
 	initConf = c
 	address := fmt.Sprintf("%s:%d", initConf.Host, initConf.Port)
 	// create a node which
@@ -46,8 +53,17 @@ func Start(c data.InitConf) error {
 	db = model.Setup()
 	defer db.Close()
 
+	drone := &model.Drone{ID: initConf.DroneID}
+	ok := drone.Select(db)
+	if ok {
+		initConf.CompanyID = drone.CompanyID
+	}
+
 	// init ws
 	ws = wsnet.NewClient(initConf)
+
+	// init csvlogger
+	csvl = csvmgr.NewCSVLogger(initConf)
 
 	var seq int64 = 0
 	var trigger = 0
@@ -55,7 +71,7 @@ func Start(c data.InitConf) error {
 		if frm, ok := event.(*gomavlib.EventFrame); ok {
 			//fmt.Printf("received: id=%d, %+v\n", frm.Message().GetID(), frm.Message())
 			if trigger == 0 {
-				rtt = &data.RTT{
+				rtt = &datamgr.RTT{
 					DroneID:  initConf.DroneID,
 					FlightID: initConf.FlightID,
 				}
@@ -92,8 +108,8 @@ func Start(c data.InitConf) error {
 	return nil
 }
 
-func process(rtt *data.RTT) {
-	req := &data.UpdateTelemetry{
+func process(rtt *datamgr.RTT) {
+	req := &datamgr.UpdateTelemetry{
 		CMD:       wsnet.CMDUpdateTelemetry,
 		ToConnID:  initConf.ConnID,
 		ModuleTag: initConf.ModuleTag,
@@ -107,4 +123,38 @@ func process(rtt *data.RTT) {
 	}
 
 	ws.Send <- jsonData
+
+	appendRecord(rtt)
+}
+
+func appendRecord(rtt *datamgr.RTT) {
+	rtts := []datamgr.RTT{*rtt}
+	b, err := csvutil.Marshal(rtts)
+	if err != nil {
+		log.Println("error:", err)
+	}
+
+	buf := bytes.NewBuffer(b)
+
+	header, err := buf.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		log.Println("error:", err)
+	}
+
+	line, err := buf.ReadBytes('\n')
+	if err != nil && err != io.EOF {
+		log.Println("error:", err)
+	}
+
+	h := string(header)
+	fmt.Println(h)
+
+	s := string(line)
+	fmt.Println(s)
+
+	if !headerSent {
+		csvl.Append <- header
+		headerSent = true
+	}
+	csvl.Append <- line
 }

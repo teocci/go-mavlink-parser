@@ -14,7 +14,7 @@ import (
 const (
 	llName  = "log-level"
 	llShort = "l"
-	llDesc  = "Log level to output [fatal|error|info|debug|trace]"
+	llDesc  = "Append level to output [fatal|error|info|debug|trace]"
 
 	lfName  = "log-file"
 	lfShort = "L"

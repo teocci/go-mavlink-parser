@@ -27,7 +27,7 @@ const (
 // Level is a log level.
 type Level int
 
-// Log levels.
+// Append levels.
 const (
 	sDebug Level = iota
 	sInfo

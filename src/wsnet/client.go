@@ -6,7 +6,6 @@ package wsnet
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/teocci/go-mavlink-parser/src/data"
 	"log"
 	"net"
 	"net/url"
@@ -16,6 +15,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/teocci/go-mavlink-parser/src/datamgr"
 )
 
 const (
@@ -56,7 +56,7 @@ var (
 	localAddress  = fmt.Sprintf("localhost:%d", wsPort)
 	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 
-	conf data.InitConf
+	conf datamgr.InitConf
 )
 
 // Client is a middleman between the websocket server and this application
@@ -102,7 +102,7 @@ func (c *Client) onMessage() {
 			c.ConnectionID = int64(dat["connection_id"].(float64))
 			c.WorkerID = int64(dat["worker_id"].(float64))
 
-			req := &data.Register{
+			req := &datamgr.Register{
 				CMD:       CMDRegister,
 				ConnID:    c.ConnectionID,
 				WorkerID:    c.WorkerID,
@@ -195,7 +195,7 @@ func (c *Client) Close() {
 	c.Close()
 }
 
-func NewClient(c data.InitConf) *Client {
+func NewClient(c datamgr.InitConf) *Client {
 	conf = c
 	var u = url.URL{Scheme: "ws", Host: remoteAddress, Path: ""}
 	if GetOutboundIP().Equal(localIP) {

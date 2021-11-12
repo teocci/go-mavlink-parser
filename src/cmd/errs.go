@@ -11,7 +11,7 @@ import (
 const (
 	errFileDoesNotExist = "%s file does not exist"
 	errCanNotLoadLogger = "cannot load logger -> %s"
-	errInitDataIsNil = "initialization data is nil"
+	errInitDataIsNil = "initialization datamgr is nil"
 )
 
 func ErrInitDataIsNil()  error {

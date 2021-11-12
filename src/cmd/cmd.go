@@ -11,7 +11,7 @@ import (
 	"github.com/teocci/go-mavlink-parser/src/cmd/cmdapp"
 	"github.com/teocci/go-mavlink-parser/src/config"
 	"github.com/teocci/go-mavlink-parser/src/core"
-	"github.com/teocci/go-mavlink-parser/src/data"
+	"github.com/teocci/go-mavlink-parser/src/datamgr"
 	"github.com/teocci/go-mavlink-parser/src/logger"
 )
 
@@ -89,7 +89,7 @@ func runE(ccmd *cobra.Command, args []string) error {
 		return ErrCanNotLoadLogger(err)
 	}
 
-	initData := data.InitConf{
+	initData := datamgr.InitConf{
 		Host:      host,
 		Port:      port,
 		ConnID:    connID,

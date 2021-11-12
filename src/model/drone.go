@@ -32,6 +32,15 @@ type Drone struct {
 }
 
 func (d *Drone) Select(db *gopg.DB) bool {
+	err := db.Model(d).WherePK().Select()
+	if err != nil {
+		panic(err)
+	}
+
+	return d.ID > 0
+}
+
+func (d *Drone) ByCompanyID(db *gopg.DB) bool {
 	err := db.Model(d).Where("company_id = ?", d.CompanyID).Limit(1).Select()
 	if err != nil {
 		panic(err)

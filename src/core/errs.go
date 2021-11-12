@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	errInitDataIsNil = "initialization data is nil"
+	errInitDataIsNil = "initialization datamgr is nil"
 )
 
 func ErrInitDataIsNil()  error {
