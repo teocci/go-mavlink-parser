@@ -20,7 +20,7 @@ import (
 
 const (
 	wsPort   = 7474
-	serverIP = "192.168.100.92"
+	serverIP = "localhost"
 
 	CMDPing     = "ping"
 	CMDPong     = "pong"
