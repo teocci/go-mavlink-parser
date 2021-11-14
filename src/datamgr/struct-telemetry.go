@@ -60,6 +60,6 @@ func ParseRTT(data []string) *RTT {
 		BatPercent:     float32(batPct),
 		BatTemperature: float32(batTemp),
 		Temperature:    float32(temp),
-		LastUpdate:     timemgr.UnixTime(float32(gpsTime)),
+		LastUpdate:     timemgr.Float32ToUnixTime(float32(gpsTime)),
 	}
 }

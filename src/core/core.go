@@ -4,16 +4,13 @@
 package core
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"time"
 
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
-	"github.com/jszwec/csvutil"
 	"github.com/teocci/go-mavlink-parser/src/csvmgr"
 	"github.com/teocci/go-mavlink-parser/src/datamgr"
 	"github.com/teocci/go-mavlink-parser/src/model"
@@ -125,36 +122,5 @@ func process(rtt *datamgr.RTT) {
 	ws.Send <- jsonData
 
 	appendRecord(rtt)
-}
-
-func appendRecord(rtt *datamgr.RTT) {
-	rtts := []datamgr.RTT{*rtt}
-	b, err := csvutil.Marshal(rtts)
-	if err != nil {
-		log.Println("error:", err)
-	}
-
-	buf := bytes.NewBuffer(b)
-
-	header, err := buf.ReadBytes('\n')
-	if err != nil && err != io.EOF {
-		log.Println("error:", err)
-	}
-
-	line, err := buf.ReadBytes('\n')
-	if err != nil && err != io.EOF {
-		log.Println("error:", err)
-	}
-
-	h := string(header)
-	fmt.Println(h)
-
-	s := string(line)
-	fmt.Println(s)
-
-	if !headerSent {
-		csvl.Append <- header
-		headerSent = true
-	}
-	csvl.Append <- line
+	insertRecord(rtt)
 }

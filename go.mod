@@ -3,16 +3,16 @@ module github.com/teocci/go-mavlink-parser
 go 1.17
 
 require (
-	github.com/aler9/gomavlib v0.0.0-20210923051455-10aad9516c54
+	github.com/aler9/gomavlib v0.0.0-20211113051526-86486ea626a6
 	github.com/go-pg/pg/v10 v10.10.6
-	github.com/gookit/color v1.4.2
+	github.com/gookit/color v1.5.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/jszwec/csvutil v1.5.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.9.0
-	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7
-	golang.org/x/text v0.3.6
+	golang.org/x/sys v0.0.0-20211113001501-0c823b97ae02
+	golang.org/x/text v0.3.7
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.1.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.8.1 // indirect
-	github.com/jackc/puddle v1.1.4 // indirect
+	github.com/jackc/puddle v1.1.3 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mitchellh/mapstructure v1.4.2 // indirect

@@ -4,6 +4,7 @@
 package model
 
 import (
+	"github.com/teocci/go-mavlink-parser/src/datamgr"
 	"time"
 
 	gopg "github.com/go-pg/pg/v10"
@@ -33,6 +34,39 @@ type FlightRecord struct {
 	LastUpdate     time.Time `json:"last_update" csv:"last_update" pg:"last_update"`
 }
 
+func (fsr *FlightRecord) Select(db *gopg.DB) bool {
+	err := db.Model(fsr).
+		Where("drone_id = ?", fsr.DroneID).
+		Where("flight_id = ?", fsr.FlightID).
+		Where("sequence = ?", fsr.Sequence).
+		Select()
+	if err != nil {
+		return false
+	}
+
+	return fsr.ID > 0
+}
+
+func (fsr *FlightRecord) InsertWithCheck(db *gopg.DB) bool {
+	res, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
+	if err != nil {
+		panic(err)
+	}
+
+	if res.RowsAffected() > 0 {
+		//fmt.Println("FlightRecord inserted")
+		return true
+	}
+
+	fr := &FlightRecord{
+		DroneID:  fsr.DroneID,
+		FlightID: fsr.FlightID,
+		Sequence: fsr.Sequence,
+	}
+
+	return fr.Select(db)
+}
+
 func (fsr *FlightRecord) Insert(db *gopg.DB) bool {
 	res, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
 	if err != nil {
@@ -45,4 +79,17 @@ func (fsr *FlightRecord) Insert(db *gopg.DB) bool {
 	}
 
 	return false
+}
+
+func (fsr *FlightRecord) Parse(rtt datamgr.RTT) {
+	fsr.DroneID = rtt.DroneID
+	fsr.FlightID = rtt.FlightID
+	fsr.Sequence = rtt.Seq
+	fsr.Latitude = float32(rtt.Lat / 1e7)
+	fsr.Longitude = float32(rtt.Lon / 1e7)
+	fsr.Altitude = float32(rtt.Alt / 1e3)
+	fsr.Roll = rtt.Roll
+	fsr.Pitch = rtt.Pitch
+	fsr.Yaw = rtt.Yaw
+	fsr.LastUpdate = rtt.LastUpdate
 }

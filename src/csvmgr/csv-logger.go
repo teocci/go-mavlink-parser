@@ -32,10 +32,6 @@ const (
 	baseLogsPath = "/home/rtt/jinan/logs"
 )
 
-var (
-	newline = []byte{'\n'}
-)
-
 type CSVLogger struct {
 	LogFile   *os.File
 	LogWriter *bufio.Writer
