@@ -5,19 +5,16 @@ package core
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/jszwec/csvutil"
 	"github.com/teocci/go-mavlink-parser/src/datamgr"
 	"io"
 	"log"
 )
 
-func appendRecord(rtt *datamgr.RTT) {
-	rtts := []datamgr.RTT{*rtt}
-	b, err := csvutil.Marshal(rtts)
-	if err != nil {
-		log.Println("error:", err)
-	}
+func appendRecord(record *datamgr.RTT) {
+	recordBundle := []datamgr.RTT{*record}
+	b, err := csvutil.Marshal(recordBundle)
+	HasError(err, false)
 
 	buf := bytes.NewBuffer(b)
 
@@ -30,12 +27,6 @@ func appendRecord(rtt *datamgr.RTT) {
 	if err != nil && err != io.EOF {
 		log.Println("error:", err)
 	}
-
-	h := string(header)
-	fmt.Println(h)
-
-	s := string(line)
-	fmt.Println(s)
 
 	if !headerSent {
 		csvl.Append <- header

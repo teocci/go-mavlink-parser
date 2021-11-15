@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/aler9/gomavlib"
@@ -22,11 +23,15 @@ var (
 	rtt      *datamgr.RTT
 	ws       *wsnet.Client
 	csvl     *csvmgr.CSVLogger
+	dbl     *DBLogger
 
 	headerSent = false
 )
 
 func Start(c datamgr.InitConf) error {
+	pid := os.Getpid()
+	fmt.Println("PID:", pid)
+
 	initConf = c
 	address := fmt.Sprintf("%s:%d", initConf.Host, initConf.Port)
 	// create a node which
@@ -46,7 +51,7 @@ func Start(c datamgr.InitConf) error {
 	}
 	defer node.Close()
 
-	// init db
+	// Init db
 	db = model.Setup()
 	defer db.Close()
 
@@ -56,11 +61,14 @@ func Start(c datamgr.InitConf) error {
 		initConf.CompanyID = drone.CompanyID
 	}
 
-	// init ws
+	// Init websocket
 	ws = wsnet.NewClient(initConf)
 
-	// init csvlogger
+	// Init CSV logger
 	csvl = csvmgr.NewCSVLogger(initConf)
+
+	// Init CSV logger
+	dbl = NewDBLogger(initConf)
 
 	var seq int64 = 0
 	var trigger = 0

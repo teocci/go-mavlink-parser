@@ -10,6 +10,20 @@ import (
 	gopg "github.com/go-pg/pg/v10"
 )
 
+type SessionStatus int
+const (
+	FlightStatusUnknown          SessionStatus = 0
+	FlightStatusGround                         = 1
+	FlightStatusAirborne                       = 2
+	FlightStatusOnMission                      = 4
+	FlightStatusMissionCompleted               = 8
+	FlightStatusBackingHome                    = 16
+	FlightStatusCreated                        = 256
+	FlightStatusActive                         = 512
+	FlightStatusCompleted                      = 1024
+	FlightStatusProcessed                      = 2048
+)
+
 type Flight struct {
 	ID          int64     `json:"id" csv:"id" pg:"id,pk,unique"`
 	DroneID     int64     `json:"drone_id" csv:"drone_id" pg:"drone_id"`
@@ -25,23 +39,41 @@ type Flight struct {
 	LastUpdate  time.Time `json:"last_update" csv:"last_update" pg:"last_update"`
 }
 
-func (fs *Flight) Insert(db *gopg.DB) bool {
-	res, err := db.Model(fs).OnConflict("DO NOTHING").Insert()
+func (f *Flight) Select(db *gopg.DB) bool {
+	err := db.Model(f).WherePK().Select()
+	if err != nil {
+		panic(err)
+	}
+
+	return f.ID > 0
+}
+
+func (f *Flight) ByHash(db *gopg.DB) bool {
+	err := db.Model(f).Where("hash = ?", f.Hash).Select()
+	if err != nil {
+		return false
+	}
+
+	return f.ID > 0
+}
+
+func (f *Flight) Insert(db *gopg.DB) bool {
+	res, err := db.Model(f).OnConflict("DO NOTHING").Insert()
 	if err != nil {
 		panic(err)
 	}
 
 	if res.RowsAffected() > 0 {
-		fmt.Printf("Flight[%d] inserted.\n", fs.ID)
+		fmt.Printf("Flight[%d] inserted.\n", f.ID)
 		return true
 	} else {
-		err = db.Model(fs).Where("hash = ?", fs.Hash).Select()
+		err = db.Model(f).Where("hash = ?", f.Hash).Select()
 		if err != nil {
 			return false
 		}
 
-		if fs.ID > 0 {
-			fmt.Printf("Flight[%d] exits.\n", fs.ID)
+		if f.ID > 0 {
+			fmt.Printf("Flight[%d] exits.\n", f.ID)
 			return true
 		}
 	}
@@ -49,13 +81,13 @@ func (fs *Flight) Insert(db *gopg.DB) bool {
 	return false
 }
 
-func (fs *Flight) Update(db *gopg.DB) bool {
-	res, err := db.Model(fs).WherePK().Update()
+func (f *Flight) Update(db *gopg.DB) bool {
+	res, err := db.Model(f).WherePK().Update()
 	if err != nil {
 		panic(err)
 	}
 	if res.RowsAffected() > 0 {
-		fmt.Printf("Flight[%d]  updated.\n", fs.ID)
+		fmt.Printf("Flight[%d]  updated.\n", f.ID)
 		return true
 	}
 

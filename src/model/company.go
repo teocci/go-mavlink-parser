@@ -18,7 +18,7 @@ type Company struct {
 func (c *Company) Select(db *gopg.DB) bool {
 	err := db.Model(c).WherePK().Select()
 	if err != nil {
-		panic(err)
+		return false
 	}
 
 	return c.ID > 0
@@ -27,7 +27,7 @@ func (c *Company) Select(db *gopg.DB) bool {
 func (c *Company) ByCode(db *gopg.DB) bool {
 	err := db.Model(c).Where("code = ?", c.Code).Limit(1).Select()
 	if err != nil {
-		panic(err)
+		return false
 	}
 
 	return c.ID > 0

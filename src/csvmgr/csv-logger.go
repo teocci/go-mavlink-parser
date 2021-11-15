@@ -41,18 +41,6 @@ type CSVLogger struct {
 	Interrupt chan os.Signal
 }
 
-type Address struct {
-	City    string
-	Country string
-}
-
-type User struct {
-	Name string
-	Address
-	Age       int `csv:"age,omitempty"`
-	CreatedAt time.Time
-}
-
 func (c *CSVLogger) onMavlinkMessage() {
 	defer CloseFile()(c.LogFile)
 
