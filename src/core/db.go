@@ -101,7 +101,8 @@ func (c *DBLogger) insert(r model.FlightRecord) {
 }
 
 func (c *DBLogger) updateFlight() {
-	log.Printf("recv: %#v", c.Flight)
+	log.Printf("recv: %#v\n", c.Flight)
+	log.Printf("inserts: %d\n", c.Inserts)
 	if c.Inserts > 0 && c.Flight.Distance > 0 && c.Flight.Duration > 0 {
 		c.Flight.Status |= model.FlightStatusCompleted | model.FlightStatusProcessed
 		c.Flight.Update(c.DBMgr)
