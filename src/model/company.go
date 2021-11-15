@@ -5,6 +5,7 @@ package model
 
 import (
 	gopg "github.com/go-pg/pg/v10"
+	"log"
 	"time"
 )
 
@@ -18,6 +19,7 @@ type Company struct {
 func (c *Company) Select(db *gopg.DB) bool {
 	err := db.Model(c).WherePK().Select()
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 
@@ -27,6 +29,7 @@ func (c *Company) Select(db *gopg.DB) bool {
 func (c *Company) ByCode(db *gopg.DB) bool {
 	err := db.Model(c).Where("code = ?", c.Code).Limit(1).Select()
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 

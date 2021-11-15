@@ -30,7 +30,8 @@ type DBLogger struct {
 var (
 	db *gopg.DB
 
-	prev *datamgr.RTT
+	prev         model.FlightRecord
+	prevTimeBoot time.Time
 
 	isFirstRecord = true
 )
@@ -85,7 +86,7 @@ func (c *DBLogger) onRecordMessage() {
 			// Close file
 			select {
 			case <-c.Done:
-			case <-time.After(time.Second):
+			case <-time.After(1500 * time.Millisecond):
 			}
 			return
 		}
@@ -94,6 +95,7 @@ func (c *DBLogger) onRecordMessage() {
 
 func (c *DBLogger) insert(r model.FlightRecord) {
 	if r.Insert(c.DBMgr) {
+		c.Flight.Length++
 		c.Flight.Duration += r.Duration
 		c.Flight.Distance += r.Distance
 		c.Inserts++
@@ -101,12 +103,11 @@ func (c *DBLogger) insert(r model.FlightRecord) {
 }
 
 func (c *DBLogger) updateFlight() {
-	log.Printf("recv: %#v\n", c.Flight)
-	log.Printf("inserts: %d\n", c.Inserts)
-	if c.Inserts > 0 && c.Flight.Distance > 0 && c.Flight.Duration > 0 {
+	if c.Flight.Length > 0 {
 		c.Flight.Status |= model.FlightStatusCompleted | model.FlightStatusProcessed
 		c.Flight.Update(c.DBMgr)
 	}
+	log.Printf("flight: %#v\n", c.Flight)
 }
 
 func (c *DBLogger) Close() {
@@ -114,19 +115,20 @@ func (c *DBLogger) Close() {
 }
 
 func insertRecord(rtt *datamgr.RTT) {
+	record := model.FlightRecord{}
+	record.Parse(*rtt)
+
 	rttTimeBoot := timemgr.UInt32ToUnixTime(rtt.TimeBootMs)
 
-	var prevTimeBoot time.Time
-	var duration int64
-	var distance float32
-	var speed float32
+	var duration int64 = 0
+	var distance float32 = 0
+	var speed float32 = 0
 
-	if rtt.Seq > 0 {
-		prevTimeBoot = timemgr.UInt32ToUnixTime(prev.TimeBootMs)
+	if !isFirstRecord {
 		duration = rttTimeBoot.Sub(prevTimeBoot).Milliseconds()
 
-		orig := gcs.SCS{Lat: float64(prev.Lat), Lon: float64(prev.Lon)}
-		dest := gcs.SCS{Lat: float64(rtt.Lat), Lon: float64(rtt.Lon)}
+		orig := gcs.SCS{Lat: float64(prev.Latitude), Lon: float64(prev.Longitude)}
+		dest := gcs.SCS{Lat: float64(record.Latitude), Lon: float64(record.Longitude)}
 
 		distance = float32(orig.MetersTo(dest))
 
@@ -135,14 +137,16 @@ func insertRecord(rtt *datamgr.RTT) {
 		}
 	}
 
-	record := model.FlightRecord{}
-	record.Parse(*rtt)
 	record.Duration = duration
 	record.Distance = distance
 	record.Speed = speed
 
+	dbl.Insert <- record
+
 	if isFirstRecord {
-		prev = rtt
+		prev = record
 		isFirstRecord = false
 	}
+
+	prevTimeBoot = rttTimeBoot
 }

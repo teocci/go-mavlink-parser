@@ -4,6 +4,7 @@
 package model
 import (
 	"fmt"
+	"log"
 	"time"
 
 	gopg "github.com/go-pg/pg/v10"
@@ -18,23 +19,24 @@ type Video struct {
 	LastUpdate  time.Time `json:"last_update" csv:"last_update" pg:"last_update"`
 }
 
-func (fs *Video) Insert(db *gopg.DB) bool {
-	res, err := db.Model(fs).OnConflict("DO NOTHING").Insert()
+func (v *Video) Insert(db *gopg.DB) bool {
+	res, err := db.Model(v).OnConflict("DO NOTHING").Insert()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
 
 	if res.RowsAffected() > 0 {
-		fmt.Printf("Video[%d] inserted.\n", fs.ID)
+		fmt.Printf("Video[%d] inserted.\n", v.ID)
 		return true
 	} else {
-		err = db.Model(fs).Where("flight_id = ?", fs.FlightID).Select()
+		err = db.Model(v).Where("flight_id = ?", v.FlightID).Select()
 		if err != nil {
 			return false
 		}
 
-		if fs.ID > 0 {
-			fmt.Printf("Video[%d] exits.\n", fs.ID)
+		if v.ID > 0 {
+			fmt.Printf("Video[%d] exits.\n", v.ID)
 			return true
 		}
 	}
@@ -42,13 +44,13 @@ func (fs *Video) Insert(db *gopg.DB) bool {
 	return false
 }
 
-func (fs *Video) Update(db *gopg.DB) bool {
-	res, err := db.Model(fs).WherePK().Update()
+func (v *Video) Update(db *gopg.DB) bool {
+	res, err := db.Model(v).WherePK().Update()
 	if err != nil {
 		panic(err)
 	}
 	if res.RowsAffected() > 0 {
-		fmt.Printf("Video[%d]  updated.\n", fs.ID)
+		fmt.Printf("Video[%d]  updated.\n", v.ID)
 		return true
 	}
 

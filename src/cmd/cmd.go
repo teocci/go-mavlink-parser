@@ -32,6 +32,8 @@ var (
 	moduleTag string
 	droneID   int64
 	flightID  int64
+	wsHost    string
+	useTmpDir bool
 )
 
 // Add supported cli commands/flags
@@ -40,11 +42,14 @@ func init() {
 
 	app.Flags().StringVarP(&host, cmdapp.HName, cmdapp.HShort, host, cmdapp.HDesc)
 	app.Flags().StringVarP(&moduleTag, cmdapp.MName, cmdapp.MShort, moduleTag, cmdapp.MDesc)
+	app.Flags().StringVarP(&wsHost, cmdapp.WName, cmdapp.WShort, wsHost, cmdapp.WDesc)
 
 	app.Flags().Int64VarP(&port, cmdapp.PName, cmdapp.PShort, port, cmdapp.PDesc)
 	app.Flags().Int64VarP(&connID, cmdapp.CName, cmdapp.CShort, connID, cmdapp.CDesc)
 	app.Flags().Int64VarP(&droneID, cmdapp.DName, cmdapp.DShort, droneID, cmdapp.DDesc)
 	app.Flags().Int64VarP(&flightID, cmdapp.FName, cmdapp.FShort, flightID, cmdapp.FDesc)
+
+	app.Flags().BoolVarP(&useTmpDir, cmdapp.UName, cmdapp.UShort, cmdapp.UDefault, cmdapp.UDesc)
 
 	_ = app.MarkFlagRequired(cmdapp.HName)
 	_ = app.MarkFlagRequired(cmdapp.MName)
@@ -84,6 +89,7 @@ func validate(ccmd *cobra.Command, args []string) error {
 
 func runE(ccmd *cobra.Command, args []string) error {
 	var err error
+
 	config.Log, err = logger.New(config.LogConfig)
 	if err != nil {
 		return ErrCanNotLoadLogger(err)
@@ -96,6 +102,7 @@ func runE(ccmd *cobra.Command, args []string) error {
 		ModuleTag: moduleTag,
 		DroneID:   droneID,
 		FlightID:  flightID,
+		WSHost:    wsHost,
 	}
 	// Make channel for errors
 	errs := make(chan error)

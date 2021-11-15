@@ -11,4 +11,5 @@ type InitConf struct {
 	CompanyID int64
 	DroneID   int64
 	FlightID  int64
+	WSHost    string
 }

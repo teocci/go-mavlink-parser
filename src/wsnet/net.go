@@ -4,8 +4,16 @@
 package wsnet
 
 import (
+	"fmt"
 	"log"
 	"net"
+)
+
+var (
+	serverIP      string
+	localIP       net.IP
+	localAddress  string
+	remoteAddress string
 )
 
 // GetOutboundIP gets preferred outbound ip of this machine
@@ -19,4 +27,13 @@ func GetOutboundIP() net.IP {
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
 
 	return localAddr.IP
+}
+
+func WebsocketServerIP(ip string) {
+	serverIP = ip
+
+	localIP = net.ParseIP(serverIP)
+
+	localAddress = fmt.Sprintf("localhost:%d", wsPort)
+	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 }

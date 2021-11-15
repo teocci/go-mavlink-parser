@@ -32,6 +32,15 @@ const (
 	FName    = "flight-id"
 	FShort   = "f"
 	FDesc    = "Flight id"
+
+	WName    = "websocket-host"
+	WShort   = "w"
+	WDesc    = "Hostname of the websocket"
+
+	UName    = "use-tmp"
+	UShort   = "u"
+	UDesc    = "Use tmp directory to save the logs"
+	UDefault = false
 )
 
 const (

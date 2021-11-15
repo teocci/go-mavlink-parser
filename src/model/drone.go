@@ -4,6 +4,7 @@
 package model
 
 import (
+	"log"
 	"time"
 
 	gopg "github.com/go-pg/pg/v10"
@@ -34,7 +35,8 @@ type Drone struct {
 func (d *Drone) Select(db *gopg.DB) bool {
 	err := db.Model(d).WherePK().Select()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
 
 	return d.ID > 0
@@ -43,7 +45,8 @@ func (d *Drone) Select(db *gopg.DB) bool {
 func (d *Drone) ByCompanyID(db *gopg.DB) bool {
 	err := db.Model(d).Where("company_id = ?", d.CompanyID).Limit(1).Select()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
 
 	return d.ID > 0

@@ -4,7 +4,7 @@
 package model
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	gopg "github.com/go-pg/pg/v10"
@@ -42,7 +42,7 @@ type Flight struct {
 func (f *Flight) Select(db *gopg.DB) bool {
 	err := db.Model(f).WherePK().Select()
 	if err != nil {
-		panic(err)
+		return false
 	}
 
 	return f.ID > 0
@@ -51,6 +51,7 @@ func (f *Flight) Select(db *gopg.DB) bool {
 func (f *Flight) ByHash(db *gopg.DB) bool {
 	err := db.Model(f).Where("hash = ?", f.Hash).Select()
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 
@@ -60,11 +61,12 @@ func (f *Flight) ByHash(db *gopg.DB) bool {
 func (f *Flight) Insert(db *gopg.DB) bool {
 	res, err := db.Model(f).OnConflict("DO NOTHING").Insert()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
 
 	if res.RowsAffected() > 0 {
-		fmt.Printf("Flight[%d] inserted.\n", f.ID)
+		log.Printf("Flight[%d] inserted.\n", f.ID)
 		return true
 	} else {
 		err = db.Model(f).Where("hash = ?", f.Hash).Select()
@@ -73,7 +75,7 @@ func (f *Flight) Insert(db *gopg.DB) bool {
 		}
 
 		if f.ID > 0 {
-			fmt.Printf("Flight[%d] exits.\n", f.ID)
+			log.Printf("Flight[%d] exits.\n", f.ID)
 			return true
 		}
 	}
@@ -87,7 +89,7 @@ func (f *Flight) Update(db *gopg.DB) bool {
 		panic(err)
 	}
 	if res.RowsAffected() > 0 {
-		fmt.Printf("Flight[%d]  updated.\n", f.ID)
+		log.Printf("Flight[%d]  updated.\n", f.ID)
 		return true
 	}
 

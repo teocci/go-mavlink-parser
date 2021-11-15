@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/url"
 	"os"
 	"os/signal"
@@ -19,8 +18,8 @@ import (
 )
 
 const (
+	defaultServerIP = "localhost"
 	wsPort   = 7474
-	serverIP = "localhost"
 
 	CMDPing     = "ping"
 	CMDPong     = "pong"
@@ -50,11 +49,6 @@ const (
 var (
 	newline = []byte{'\n'}
 	space   = []byte{' '}
-
-	localIP = net.ParseIP(serverIP)
-
-	localAddress  = fmt.Sprintf("localhost:%d", wsPort)
-	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 
 	conf datamgr.InitConf
 )
@@ -197,6 +191,7 @@ func (c *Client) Close() {
 
 func NewClient(c datamgr.InitConf) *Client {
 	conf = c
+	WebsocketServerIP(conf.WSHost)
 	var u = url.URL{Scheme: "ws", Host: remoteAddress, Path: ""}
 	if GetOutboundIP().Equal(localIP) {
 		u = url.URL{Scheme: "ws", Host: localAddress, Path: ""}

@@ -4,10 +4,11 @@
 package model
 
 import (
-	"github.com/teocci/go-mavlink-parser/src/datamgr"
+	"log"
 	"time"
 
 	gopg "github.com/go-pg/pg/v10"
+	"github.com/teocci/go-mavlink-parser/src/datamgr"
 )
 
 type FlightRecord struct {
@@ -41,6 +42,7 @@ func (fsr *FlightRecord) Select(db *gopg.DB) bool {
 		Where("sequence = ?", fsr.Sequence).
 		Select()
 	if err != nil {
+		log.Println(err)
 		return false
 	}
 
@@ -50,7 +52,8 @@ func (fsr *FlightRecord) Select(db *gopg.DB) bool {
 func (fsr *FlightRecord) InsertWithCheck(db *gopg.DB) bool {
 	res, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
 
 	if res.RowsAffected() > 0 {
@@ -70,7 +73,8 @@ func (fsr *FlightRecord) InsertWithCheck(db *gopg.DB) bool {
 func (fsr *FlightRecord) Insert(db *gopg.DB) bool {
 	res, err := db.Model(fsr).OnConflict("DO NOTHING").Insert()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
 
 	if res.RowsAffected() > 0 {
@@ -85,9 +89,9 @@ func (fsr *FlightRecord) Parse(rtt datamgr.RTT) {
 	fsr.DroneID = rtt.DroneID
 	fsr.FlightID = rtt.FlightID
 	fsr.Sequence = rtt.Seq
-	fsr.Latitude = float32(rtt.Lat / 1e7)
-	fsr.Longitude = float32(rtt.Lon / 1e7)
-	fsr.Altitude = float32(rtt.Alt / 1e3)
+	fsr.Latitude = float32(rtt.Lat) / 1e7
+	fsr.Longitude = float32(rtt.Lon) / 1e7
+	fsr.Altitude = float32(rtt.Alt) / 1e3
 	fsr.Roll = rtt.Roll
 	fsr.Pitch = rtt.Pitch
 	fsr.Yaw = rtt.Yaw

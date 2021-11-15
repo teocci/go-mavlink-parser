@@ -30,6 +30,7 @@ const (
 	formatRTTDirPath     = "%s/c-%d/d-%d"
 
 	baseLogsPath = "/home/rtt/jinan/logs"
+	//baseLogsPath = "./tmp"
 )
 
 type CSVLogger struct {
@@ -90,6 +91,7 @@ func NewCSVLogger(c datamgr.InitConf) *CSVLogger {
 
 	fnExt := fmt.Sprintf(formatRTTFilenameExt, fn)
 	rttPath := filepath.Join(rttLogPath, fnExt)
+	fmt.Println("RTT file path:", rttPath)
 
 	err := os.MkdirAll(filepath.Dir(rttPath), os.ModePerm)
 	HasError(err, true)
