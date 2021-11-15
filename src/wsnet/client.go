@@ -192,10 +192,7 @@ func (c *Client) Close() {
 func NewClient(c datamgr.InitConf) *Client {
 	conf = c
 	WebsocketServerIP(conf.WSHost)
-	var u = url.URL{Scheme: "ws", Host: remoteAddress, Path: ""}
-	if GetOutboundIP().Equal(localIP) {
-		u = url.URL{Scheme: "ws", Host: localAddress, Path: ""}
-	}
+	var u = url.URL{Scheme: "ws", Host: serverAddress, Path: ""}
 	log.Printf("connecting to %s", u.String())
 
 	wsConn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)

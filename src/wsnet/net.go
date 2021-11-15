@@ -12,8 +12,7 @@ import (
 var (
 	serverIP      string
 	localIP       net.IP
-	localAddress  string
-	remoteAddress string
+	serverAddress string
 )
 
 // GetOutboundIP gets preferred outbound ip of this machine
@@ -30,10 +29,16 @@ func GetOutboundIP() net.IP {
 }
 
 func WebsocketServerIP(ip string) {
-	serverIP = ip
+	if len(ip) > 0 {
+		serverIP = ip
+	} else if ip == defaultServerIP {
+		serverIP = defaultServerIP
+	} else {
+		localIP = net.ParseIP(serverIP)
+		if GetOutboundIP().Equal(localIP) {
+			serverIP = defaultServerIP
+		}
+	}
 
-	localIP = net.ParseIP(serverIP)
-
-	localAddress = fmt.Sprintf("localhost:%d", wsPort)
-	remoteAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
+	serverAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 }
