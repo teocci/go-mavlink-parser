@@ -64,7 +64,7 @@ func (c *CSVLogger) onMavlinkMessage() {
 
 			FlushWriter()(c.LogWriter)
 		case <-c.Interrupt:
-			log.Println("onEvent-> interrupt")
+			log.Println("onMavlinkMessage-> interrupt")
 
 			// Close file
 			select {

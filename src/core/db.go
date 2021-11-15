@@ -56,12 +56,12 @@ func NewDBLogger(c datamgr.InitConf) *DBLogger {
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
-	go dbLogger.onRTTMessage()
+	go dbLogger.onRecordMessage()
 
 	return dbLogger
 }
 
-func (c *DBLogger) onRTTMessage() {
+func (c *DBLogger) onRecordMessage() {
 	for {
 		select {
 		case <-c.Done:
@@ -79,7 +79,7 @@ func (c *DBLogger) onRTTMessage() {
 				c.insert(<-c.Insert)
 			}
 		case <-c.Interrupt:
-			log.Println("onRTTMessage-> interrupt")
+			log.Println("onRecordMessage-> interrupt")
 			c.updateFlight()
 
 			// Close file
@@ -101,6 +101,7 @@ func (c *DBLogger) insert(r model.FlightRecord) {
 }
 
 func (c *DBLogger) updateFlight() {
+	log.Printf("recv: %#v", c.Flight)
 	if c.Inserts > 0 && c.Flight.Distance > 0 && c.Flight.Duration > 0 {
 		c.Flight.Status |= model.FlightStatusCompleted | model.FlightStatusProcessed
 		c.Flight.Update(c.DBMgr)
