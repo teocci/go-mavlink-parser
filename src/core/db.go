@@ -34,6 +34,8 @@ var (
 	prevTimeBoot time.Time
 
 	isFirstRecord = true
+
+	isProcessing = false
 )
 
 func NewDBLogger(c datamgr.InitConf) *DBLogger {
@@ -79,14 +81,16 @@ func (c *DBLogger) onRecordMessage() {
 			for i := 0; i < n; i++ {
 				c.insert(<-c.Insert)
 			}
+
+			c.updateFlight(false)
 		case <-c.Interrupt:
 			log.Println("onRecordMessage-> interrupt")
-			c.updateFlight()
+			c.updateFlight(true)
 
 			// Close file
 			select {
 			case <-c.Done:
-			case <-time.After(1500 * time.Millisecond):
+			case <-time.After(2 * time.Second):
 			}
 			return
 		}
@@ -102,12 +106,21 @@ func (c *DBLogger) insert(r model.FlightRecord) {
 	}
 }
 
-func (c *DBLogger) updateFlight() {
+func (c *DBLogger) updateFlight(close bool) {
 	if c.Flight.Length > 0 {
-		c.Flight.Status |= model.FlightStatusCompleted | model.FlightStatusProcessed
-		c.Flight.Update(c.DBMgr)
+		if !isProcessing {
+			c.Flight.Status |= model.FlightStatusProcessed
+			isProcessing = true
+		}
+		if close {
+			c.Flight.Status |= model.FlightStatusCompleted
+		}
+		ok := c.Flight.Update(c.DBMgr)
+
+		if close && ok {
+			log.Printf("flight: %#v\n", c.Flight)
+		}
 	}
-	log.Printf("flight: %#v\n", c.Flight)
 }
 
 func (c *DBLogger) Close() {

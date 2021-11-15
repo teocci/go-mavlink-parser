@@ -31,14 +31,17 @@ func GetOutboundIP() net.IP {
 func WebsocketServerIP(ip string) {
 	if len(ip) > 0 {
 		serverIP = ip
-	} else if ip == defaultServerIP {
-		serverIP = defaultServerIP
 	} else {
+		serverIP = defaultServerIP
+	}
+
+	if serverIP != defaultServerIP {
 		localIP = net.ParseIP(serverIP)
 		if GetOutboundIP().Equal(localIP) {
 			serverIP = defaultServerIP
 		}
 	}
+	fmt.Printf("server-ip: %s\n", serverIP)
 
 	serverAddress = fmt.Sprintf("%s:%d", serverIP, wsPort)
 }

@@ -86,10 +86,12 @@ func (f *Flight) Insert(db *gopg.DB) bool {
 func (f *Flight) Update(db *gopg.DB) bool {
 	res, err := db.Model(f).WherePK().Update()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return false
 	}
+
 	if res.RowsAffected() > 0 {
-		log.Printf("Flight[%d]  updated.\n", f.ID)
+		//log.Printf("Flight[%d]  updated.\n", f.ID)
 		return true
 	}
 
