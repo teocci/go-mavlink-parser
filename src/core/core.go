@@ -56,9 +56,10 @@ func Start(c datamgr.InitConf) error {
 	defer db.Close()
 
 	drone := &model.Drone{ID: initConf.DroneID}
-	ok := drone.Select(db)
-	if ok {
+	droneExits := drone.Select(db)
+	if droneExits {
 		initConf.CompanyID = drone.CompanyID
+		log.Printf("Drone: %d exits. Get company id: %d", drone.ID, drone.CompanyID)
 	}
 
 	// Init websocket

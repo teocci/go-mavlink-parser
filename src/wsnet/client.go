@@ -83,7 +83,6 @@ func (c *Client) onMessage() {
 		_ = c.Conn.Close()
 	}()
 
-	fmt.Println("onMessage listening")
 	for {
 		_, message, err := c.Conn.ReadMessage()
 		if err != nil {
@@ -140,10 +139,6 @@ func (c *Client) onEvent() {
 		case <-c.Done:
 			return
 		case message, ok := <-c.Send:
-			data := string(message[:])
-			log.Println("onEvent-> message")
-			log.Printf("%#v", message)
-			log.Printf("%#v", data)
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				_ = c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
@@ -155,6 +150,10 @@ func (c *Client) onEvent() {
 				return
 			}
 			_, _ = w.Write(message)
+			//data := string(message[:])
+			//log.Println("onEvent-> message")
+			//log.Printf("%#v", message)
+			//log.Printf("%#v", data)
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.Send)
@@ -167,7 +166,6 @@ func (c *Client) onEvent() {
 				return
 			}
 		case <-ticker.C:
-			log.Println("onEvent-> ticker.C")
 			_ = c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if err := c.Conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
