@@ -202,7 +202,7 @@ func NewClient(c datamgr.InitConf) *Client {
 	}
 
 	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 
 	client := &Client{
 		Conn:      wsConn,

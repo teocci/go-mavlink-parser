@@ -101,7 +101,7 @@ func NewCSVLogger(c datamgr.InitConf) *CSVLogger {
 	writer := bufio.NewWriter(file)
 
 	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 
 	csvLogger := &CSVLogger{
 		LogFile:   file,
