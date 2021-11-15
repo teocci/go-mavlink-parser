@@ -115,6 +115,8 @@ func (c *Client) onMessage() {
 				log.Fatalf("onMessage(): %v", err)
 			}
 			c.Send <- jsonData
+		case CMDUpdateTelemetry:
+			continue
 		default:
 			log.Printf("recv: %s", message)
 		}
