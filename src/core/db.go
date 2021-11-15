@@ -46,7 +46,7 @@ func NewDBLogger(c datamgr.InitConf) *DBLogger {
 	flight.Select(db)
 
 	interrupt := make(chan os.Signal)
-	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
 
 	dbLogger := &DBLogger{
 		DBMgr:     db,
@@ -87,10 +87,9 @@ func (c *DBLogger) onRecordMessage() {
 			log.Println("onRecordMessage-> interrupt")
 			c.updateFlight(true)
 
-			// Close file
 			select {
 			case <-c.Done:
-			case <-time.After(2 * time.Second):
+			case <-time.After(time.Second):
 			}
 			return
 		}
