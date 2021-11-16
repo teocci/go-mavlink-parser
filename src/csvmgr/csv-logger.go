@@ -83,7 +83,6 @@ func (c *CSVLogger) Close() {
 
 func NewCSVLogger(c datamgr.InitConf) *CSVLogger {
 	t := time.Now()
-
 	fn := fmt.Sprintf(formatRTTFilename, prefixRTTFile, c.FlightID, t.Format("20060102-150405"))
 	fmt.Println("RTT filename:", fn)
 
