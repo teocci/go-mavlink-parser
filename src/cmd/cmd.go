@@ -23,7 +23,7 @@ var (
 		PreRunE:       validate,
 		RunE:          runE,
 		SilenceErrors: false,
-		SilenceUsage:  true,
+		SilenceUsage:  false,
 	}
 
 	host      string
