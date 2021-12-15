@@ -18,7 +18,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-const jinanBenchConfig = "user=jinan password=jinan#db host=localhost port=5432 dbname=jinan_db sslmode=disable"
+const jinanBenchConfig = "user=jinan password=jinan!@34RTT host=localhost port=5432 dbname=jinan_db sslmode=disable"
 
 var (
 	setupOnce sync.Once
